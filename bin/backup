@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+dir="$(pwd)"
+conf="$dir/conf"
+dest=/bak
+
+ts=$(date +%Y%m%dT%H%M%S)
+latest=$dest/latest
+snap=$dest/$ts
+
+cd /
+
+if [[ ! -f $conf/exclude ]]; then
+    echo "File not found: $conf/exclude" >&2
+    exit 1
+fi
+
+if [[ ! -d $latest ]]; then
+    echo "Error: Backup filesystem isn't mounted, or $latest has not been created." >&2
+    echo "Check mount or run \`mkdir $latest\` and try again." >&2
+    exit 1
+fi
+
+rsync \
+    -av --progress \
+    --delete --delete-excluded \
+    --one-file-system \
+    --exclude-from "$conf/exclude" \
+    / $latest
+
+# Make an immutable snapshot.
+s3qlcp $latest $snap
+s3qllock $snap
+
+# Make sure the important changes are saved.
+s3qlctrl flushcache $dest
+
+# Delete backups older than 6 months.
+find $dest -maxdepth 1 -name '20*' -type d -mtime +180 -exec s3qlrm {} \;

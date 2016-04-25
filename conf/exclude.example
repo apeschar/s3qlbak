@@ -1,0 +1,9 @@
+/root/.cache
+/root/.s3ql
+/swapfile
+/tmp
+/var/cache
+/var/lib/mysql
+/var/log
+/var/log/dar
+/var/tmp
