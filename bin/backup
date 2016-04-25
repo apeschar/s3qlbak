@@ -31,6 +31,7 @@ else
     rsync_opts=""
 fi
 
+set +e
 rsync \
     $rsync_opts \
     -a \
@@ -38,6 +39,17 @@ rsync \
     --one-file-system \
     --exclude-from "$conf/exclude" \
     / $latest
+status=$?
+set -e
+
+if [[ $status -eq 0 ]]; then
+    true
+elif [[ $status -eq 23 || $status -eq 24 ]]; then
+    echo "Ignoring rsync exit status $status" >&2
+else
+    echo "Rsync exited with status $status" >&2
+    exit 1
+fi
 
 # Make an immutable snapshot.
 s3qlcp $latest $snap
