@@ -25,8 +25,15 @@ if [[ ! -d $latest ]]; then
     exit 1
 fi
 
+if [[ -t 1 ]]; then
+    rsync_opts="-v"
+else
+    rsync_opts=""
+fi
+
 rsync \
-    -av --progress \
+    $rsync_opts \
+    -a \
     --delete --delete-excluded \
     --one-file-system \
     --exclude-from "$conf/exclude" \
