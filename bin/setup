@@ -1,0 +1,47 @@
+#!/bin/bash
+
+set -euo pipefail
+
+say() { echo "$@" >&2; }
+say_do() { say "$@"; "$@"; }
+
+cd "$(dirname "$0")/.."
+
+read -e -p "Bucket: " -i "s3://kibo-s3qlbak-$(hostname)" bucket
+
+if [[ ! -f /etc/s3qlbak ]]; then
+    say_do cp conf/s3qlbak /etc/
+    say_do perl -pi -e "s|^BUCKET=.*|BUCKET=$bucket|" /etc/s3qlbak
+fi
+
+say_do cp -n conf/s3qlbak_exclude /etc/
+say_do cp -n conf/s3qlbak.service /etc/systemd/system/
+
+source /etc/s3qlbak
+
+say_do chmod 600 "$AUTHFILE"
+say_do mkfs.s3ql --plain "$BUCKET"
+
+say_do systemctl daemon-reload
+say_do systemctl enable s3qlbak
+say_do mkdir -p "$MOUNTPOINT"
+say_do systemctl start s3qlbak
+
+mount=0
+tries=100
+while (( tries-- )); do
+    if grep -q " $MOUNTPOINT " /proc/mounts; then
+        mount=1
+        break
+    fi
+    if ! systemctl is-active s3qlbak &>/dev/null; then
+        break
+    fi
+done
+
+if [[ $mount -eq 0 ]]; then
+    say "$MOUNTPOINT not mounted."
+    exec systemctl status s3qlbak -l
+fi
+
+mkdir /bak/latest
