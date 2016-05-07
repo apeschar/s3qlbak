@@ -5,3 +5,6 @@ Description=s3qlbak
 EnvironmentFile=/etc/s3qlbak
 ExecStart=/usr/bin/mount.s3ql --fg --authfile ${AUTHFILE} ${BUCKET} ${MOUNTPOINT}
 ExecStop=/usr/bin/umount.s3ql ${MOUNTPOINT}
+
+[Install]
+WantedBy=network-online.target
