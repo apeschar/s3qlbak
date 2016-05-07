@@ -3,5 +3,5 @@ Description=s3qlbak
 
 [Service]
 EnvironmentFile=/etc/s3qlbak
-ExecStart=/usr/sbin/mount.s3ql --fg --authfile ${AUTHFILE} ${BUCKET} ${MOUNTPOINT}
-ExecStop=/usr/sbin/umount.s3ql ${MOUNTPOINT}
+ExecStart=/usr/bin/mount.s3ql --fg --authfile ${AUTHFILE} ${BUCKET} ${MOUNTPOINT}
+ExecStop=/usr/bin/umount.s3ql ${MOUNTPOINT}

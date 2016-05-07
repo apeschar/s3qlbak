@@ -1,0 +1,4 @@
+AUTHFILE=/root/.s3ql/authinfo2
+EXCLUDEFILE=/etc/s3qlbak_exclude
+MOUNTPOINT=/bak
+BUCKET=s3://kibo-s3qlbak-hostname

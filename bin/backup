@@ -5,19 +5,20 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 dir="$(pwd)"
-conf="$dir/conf"
-dest=/bak
-
-ts=$(date +%Y-%m-%d_%H:%M:%S)
-latest=$dest/latest
-snap=$dest/$ts
 
 cd /
 
-if [[ ! -f $conf/exclude ]]; then
-    echo "File not found: $conf/exclude" >&2
+if [[ ! -f /etc/s3qlbak ]]; then
+    echo "File not found: /etc/s3qlbak" >&2
     exit 1
 fi
+
+source /etc/s3qlbak
+
+ts=$(date +%Y-%m-%d_%H:%M:%S)
+dest=$MOUNTPOINT
+latest=$dest/latest
+snap=$dest/$ts
 
 if [[ ! -d $latest ]]; then
     echo "Error: Backup filesystem isn't mounted, or $latest has not been created." >&2
@@ -37,7 +38,7 @@ rsync \
     -a \
     --delete --delete-excluded \
     --one-file-system \
-    --exclude-from "$conf/exclude" \
+    --exclude-from "$EXCLUDEFILE" \
     / $latest
 status=$?
 set -e
