@@ -37,6 +37,7 @@ while (( tries-- )); do
     if ! systemctl is-active s3qlbak &>/dev/null; then
         break
     fi
+    sleep 0.1
 done
 
 if [[ $mount -eq 0 ]]; then
